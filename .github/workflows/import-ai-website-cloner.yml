@@ -1,0 +1,28 @@
+name: Import AI Website Cloner Template
+on:
+  push:
+    paths:
+      - '.github/workflows/import-ai-website-cloner.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch upstream source
+        run: |
+          git clone --depth 1 https://github.com/JCodesMore/ai-website-cloner-template.git /tmp/ai-website-cloner
+          rm -rf /tmp/ai-website-cloner/.git
+          rm -rf ai-website-cloner-template
+          mkdir -p ai-website-cloner-template
+          cp -a /tmp/ai-website-cloner/. ai-website-cloner-template/
+          find ai-website-cloner-template -type f | wc -l
+          du -sh ai-website-cloner-template
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -f -- ai-website-cloner-template
+          if git diff --cached --quiet; then echo "nothing to commit"; else git commit -m "Import AI Website Cloner Template source snapshot"; git push; fi
