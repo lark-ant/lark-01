@@ -1,0 +1,32 @@
+name: Import CleanYourTV
+on:
+  push:
+    paths:
+      - '.github/workflows/import-cleanyourtv.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch upstream source
+        run: |
+          git clone --depth 1 https://github.com/Gathin23/cleanyourtv.git /tmp/cleanyourtv
+          rm -rf /tmp/cleanyourtv/.git
+          echo "Files over 95MB (excluded):"
+          find /tmp/cleanyourtv -type f -size +95M -print -delete
+          echo "Largest files:"
+          find /tmp/cleanyourtv -type f -printf '%s %p\n' | sort -nr | head -10
+          rm -rf CleanYourTV
+          mkdir -p CleanYourTV
+          cp -a /tmp/cleanyourtv/. CleanYourTV/
+          find CleanYourTV -type f | wc -l
+          du -sh CleanYourTV
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -f -- CleanYourTV
+          if git diff --cached --quiet; then echo "nothing to commit"; else git commit -m "Import CleanYourTV source snapshot"; git push; fi
